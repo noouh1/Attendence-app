@@ -26,10 +26,10 @@ from email.mime.image    import MIMEImage
 EXCEL_FILE        = "people_with_ids.xlsx"
 QR_FOLDER         = "qr_codes"
 
-GMAIL_ADDRESS     = "your_email@gmail.com"   # ← your Gmail
-GMAIL_APP_PASSWORD = "xxxx xxxx xxxx xxxx"   # ← Gmail App Password
+GMAIL_ADDRESS     = "noouhfff@gmail.com"   # ← your Gmail
+GMAIL_APP_PASSWORD = "okniislvzproykaz"   # ← Gmail App Password
 
-EVENT_NAME        = "الفعالية"               # ← event name (shown in email)
+EVENT_NAME        = "Mega Event"               # ← event name (shown in email)
 NAME_COLUMN       = "name"
 EMAIL_COLUMN      = "email"
 

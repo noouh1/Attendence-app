@@ -5,10 +5,10 @@ Run: python create_sample.py
 import pandas as pd
 
 data = {
-    "name":  ["أحمد محمد", "سارة علي", "محمود حسن", "فاطمة خالد",
+    "name":  ["noouh ", "nnouh ", " dima", "فاطمة خالد",
               "عمر يوسف", "نور إبراهيم", "كريم عبدالله", "هناء سعيد",
               "طارق رضا", "ليلى منصور"],
-    "email": ["ahmed@example.com", "sara@example.com", "mahmoud@example.com",
+    "email": ["noouhfff@gmail.com", "noouhehab1@gmail.com", "dima.ahmed4444@example.com",
               "fatma@example.com", "omar@example.com", "nour@example.com",
               "karim@example.com", "hanaa@example.com", "tarek@example.com",
               "laila@example.com"],
