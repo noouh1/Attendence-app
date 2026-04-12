@@ -1,1 +1,1 @@
-web: python 3_attendance_app.py
+web: gunicorn 3_attendance_app:app
