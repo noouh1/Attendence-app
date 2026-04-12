@@ -29,7 +29,7 @@ QR_FOLDER         = "qr_codes"
 GMAIL_ADDRESS     = "noouhfff@gmail.com"   # ← your Gmail
 GMAIL_APP_PASSWORD = "okniislvzproykaz"   # ← Gmail App Password
 
-EVENT_NAME        = "Mega Event"               # ← event name (shown in email)
+EVENT_NAME        = "IEEE Mega Event"               # ← event name (shown in email)
 NAME_COLUMN       = "name"
 EMAIL_COLUMN      = "email"
 
@@ -38,39 +38,89 @@ DELAY_SECONDS     = 1   # delay between emails (avoid spam filter)
 
 
 def build_email_html(name, uid, event_name):
-    """Returns beautiful HTML email body."""
+    """Returns modern styled HTML email body in English."""
     return f"""
-    <html><body style="font-family: Arial, sans-serif; direction: rtl; background:#f4f4f4; padding:20px;">
-      <div style="max-width:500px; margin:auto; background:white; border-radius:12px;
-                  padding:30px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-        <h2 style="color:#2c3e50; text-align:center;">🎫 تذكرة حضورك</h2>
-        <p style="font-size:16px;">عزيزي/عزيزتي <strong>{name}</strong>،</p>
-        <p>يسعدنا دعوتك لحضور <strong>{event_name}</strong>.</p>
-        <p>الرجاء تقديم QR Code التالي عند الدخول:</p>
-        <div style="text-align:center; margin:20px 0;">
-          <img src="cid:qrimage" style="width:200px; height:200px; border:2px solid #eee; border-radius:8px;"/>
+    <html>
+    <body style="margin:0; padding:0; background:#f5f7fa; font-family: 'Segoe UI', Arial, sans-serif;">
+      
+      <div style="max-width:520px; margin:40px auto; background:#ffffff; border-radius:16px;
+                  box-shadow:0 8px 24px rgba(0,0,0,0.08); overflow:hidden;">
+        
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg, #4e73df, #224abe); padding:25px; text-align:center;">
+          <h2 style="color:#ffffff; margin:0; font-size:22px;">🎟 Your Event Ticket</h2>
         </div>
-        <p style="color:#888; font-size:13px; text-align:center;">رقم التسجيل: <code>{uid}</code></p>
-        <hr style="border:none; border-top:1px solid #eee; margin:20px 0;"/>
-        <p style="color:#aaa; font-size:12px; text-align:center;">هذه الرسالة تلقائية، يُرجى عدم الرد عليها.</p>
+
+        <!-- Body -->
+        <div style="padding:30px;">
+          
+          <p style="font-size:16px; color:#333;">Dear <strong>{name}</strong>,</p>
+          
+          <p style="font-size:15px; color:#555; line-height:1.6;">
+            We are pleased to invite you to attend <strong>{event_name}</strong>.
+          </p>
+
+          <p style="font-size:15px; color:#555;">
+            Please present the following QR code at the entrance:
+          </p>
+
+          <!-- QR Code -->
+          <div style="text-align:center; margin:25px 0;">
+            <img src="cid:qrimage"
+                 style="width:200px; height:200px; border-radius:12px;
+                        border:1px solid #eee; padding:8px; background:#fafafa;" />
+          </div>
+
+          <!-- UID -->
+          <div style="text-align:center; margin-top:10px;">
+            <span style="font-size:13px; color:#888;">Registration ID:</span><br/>
+            <code style="font-size:14px; color:#4e73df; background:#f1f3f9; padding:6px 10px;
+                         border-radius:6px; display:inline-block; margin-top:5px;">
+              {uid}
+            </code>
+          </div>
+
+          <hr style="border:none; border-top:1px solid #eee; margin:30px 0;" />
+
+          <!-- Footer -->
+          <p style="font-size:12px; color:#aaa; text-align:center; line-height:1.5;">
+            This is an automated message. Please do not reply.<br/>
+            We look forward to seeing you at the event!
+          </p>
+
+        </div>
       </div>
-    </body></html>
+
+    </body>
+    </html>
     """
 
 
 def send_email(smtp, to_email, name, uid, qr_path, event_name):
     msg = MIMEMultipart("related")
-    msg["Subject"] = f"🎫 QR Code الخاص بك — {event_name}"
+    msg["Subject"] = f"🎟 Your Event Ticket — {event_name}"
     msg["From"]    = GMAIL_ADDRESS
     msg["To"]      = to_email
 
-    # HTML body
+    # Plain + HTML versions (consistent English tone)
     alt = MIMEMultipart("alternative")
-    alt.attach(MIMEText(f"عزيزي {name}، QR Code الخاص بك: {uid}", "plain", "utf-8"))
+
+    plain_text = f"""Dear {name},
+
+You are invited to attend {event_name}.
+
+Please present your QR code at the entrance.
+
+Registration ID: {uid}
+
+This is an automated message. Please do not reply.
+"""
+
+    alt.attach(MIMEText(plain_text, "plain", "utf-8"))
     alt.attach(MIMEText(build_email_html(name, uid, event_name), "html", "utf-8"))
     msg.attach(alt)
 
-    # Embed QR image inline
+    # Attach QR image inline
     with open(qr_path, "rb") as f:
         img = MIMEImage(f.read(), _subtype="png")
         img.add_header("Content-ID", "<qrimage>")
