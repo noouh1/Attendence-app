@@ -40,9 +40,9 @@ def init_db():
             conn.commit()
             print(f"✅ Imported {imported} people from Excel.")
         else:
-            print(f"⚠️  WARNING: {EXCEL_FILE} not found. Database is empty.")
+            print(f"⚠️  {EXCEL_FILE} not found — DB will be empty.")
     else:
-        print(f"✅ Database ready — {count} people loaded.")
+        print(f"✅ DB ready — {count} people.")
     conn.close()
 
 
@@ -55,9 +55,29 @@ def get_stats():
     return {"total": total, "attended": attended, "remaining": total - attended}
 
 
+# ── THIS RUNS ON STARTUP (works with both gunicorn and python) ──
+init_db()
+
+
 @app.route("/")
 def index():
     return render_template("scanner.html")
+
+
+@app.route("/debug")
+def debug():
+    conn = get_conn()
+    total   = conn.execute("SELECT COUNT(*) FROM people").fetchone()[0]
+    attended = conn.execute("SELECT COUNT(*) FROM attendance WHERE attended=1").fetchone()[0]
+    sample  = conn.execute("SELECT unique_id, name FROM people LIMIT 5").fetchall()
+    conn.close()
+    return jsonify({
+        "status": "ok",
+        "excel_file_found": os.path.exists(EXCEL_FILE),
+        "total_people": total,
+        "attended": attended,
+        "sample_ids": [{"uid": r[0], "name": r[1]} for r in sample]
+    })
 
 
 @app.route("/scan", methods=["POST"])
@@ -71,8 +91,9 @@ def scan():
 
         conn = get_conn()
         person = conn.execute(
-            "SELECT p.unique_id, p.name, a.attended, a.attend_time FROM people p "
-            "LEFT JOIN attendance a ON p.unique_id = a.unique_id WHERE p.unique_id = ?", (uid,)
+            "SELECT p.unique_id, p.name, a.attended, a.attend_time "
+            "FROM people p LEFT JOIN attendance a ON p.unique_id = a.unique_id "
+            "WHERE p.unique_id = ?", (uid,)
         ).fetchone()
         conn.close()
 
@@ -104,23 +125,6 @@ def stats():
     return jsonify(get_stats())
 
 
-@app.route("/debug")
-def debug():
-    """Check database status — visit /debug to diagnose."""
-    conn = get_conn()
-    total = conn.execute("SELECT COUNT(*) FROM people").fetchone()[0]
-    attended = conn.execute("SELECT COUNT(*) FROM attendance WHERE attended=1").fetchone()[0]
-    sample = conn.execute("SELECT unique_id, name FROM people LIMIT 5").fetchall()
-    conn.close()
-    excel_exists = os.path.exists(EXCEL_FILE)
-    return jsonify({
-        "excel_file_found": excel_exists,
-        "total_people": total,
-        "attended": attended,
-        "sample_ids": [{"uid": r[0], "name": r[1]} for r in sample]
-    })
-
-
 @app.route("/export")
 def export():
     try:
@@ -133,7 +137,6 @@ def export():
             LEFT JOIN attendance a ON p.unique_id = a.unique_id
         """, conn)
         conn.close()
-
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             df.to_excel(writer, index=False, sheet_name="Attendance")
@@ -146,8 +149,5 @@ def export():
 
 
 if __name__ == "__main__":
-    print("🚀 Initializing...")
-    init_db()
     port = int(os.environ.get("PORT", 5000))
-    print(f"🚀 Running on port {port}")
     app.run(debug=False, host="0.0.0.0", port=port)
