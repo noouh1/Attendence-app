@@ -27,7 +27,7 @@ EXCEL_FILE        = "people_with_ids.xlsx"
 QR_FOLDER         = "qr_codes"
 
 GMAIL_ADDRESS     = "noouhfff@gmail.com"   # ← your Gmail
-GMAIL_APP_PASSWORD = "***REMOVED***"   # ← Gmail App Password
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")  # set your Gmail app password as an environment variable; never hardcode it
 
 EVENT_NAME        = "IEEE Mega Event"               # ← event name (shown in email)
 NAME_COLUMN       = "name"
